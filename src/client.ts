@@ -8,6 +8,101 @@ import { RestClientV5 } from 'bybit-api';
 import type { BybitMode } from './types.js';
 import { getRateLimiter, RATE_LIMIT_ERROR_CODES } from './rate-limiter.js';
 
+// ============ Response Normalization ============
+
+/**
+ * Fields that should always be strings (even if API returns numbers)
+ * These are typically ID fields that may be empty or contain numeric values
+ */
+const STRING_FIELDS = new Set([
+  'orderLinkId',
+  'orderId',
+  'execId',
+  'blockTradeId',
+  'symbol',
+  'side',
+  'orderType',
+  'stopOrderType',
+  'orderStatus',
+  'execType',
+  'category',
+  'positionIdx',
+  'tradeId',
+  'leavesQty',
+  'leavesValue',
+]);
+
+/**
+ * Fields that should always be numbers (even if API returns strings)
+ * These are typically timestamp or numeric ID fields
+ */
+const NUMBER_FIELDS = new Set([
+  'createdTime',
+  'updatedTime',
+  'createdAt',
+  'updatedAt',
+  'transactionTime',
+  'execTime',
+  'fillTime',
+]);
+
+/**
+ * Normalize a single value based on field name
+ */
+function normalizeValue(key: string, value: unknown): unknown {
+  if (value === undefined || value === null || value === '') {
+    return value;
+  }
+
+  // Convert to string if field should be string
+  if (STRING_FIELDS.has(key) && typeof value === 'number') {
+    return String(value);
+  }
+
+  // Convert to number if field should be number
+  if (NUMBER_FIELDS.has(key) && typeof value === 'string') {
+    const parsed = parseInt(value, 10);
+    return isNaN(parsed) ? value : parsed;
+  }
+
+  return value;
+}
+
+/**
+ * Recursively normalize an object's field types
+ */
+function normalizeObject(obj: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  
+  for (const [key, value] of Object.entries(obj)) {
+    if (Array.isArray(value)) {
+      result[key] = value.map(item => 
+        typeof item === 'object' && item !== null 
+          ? normalizeObject(item as Record<string, unknown>)
+          : item
+      );
+    } else if (typeof value === 'object' && value !== null) {
+      result[key] = normalizeObject(value as Record<string, unknown>);
+    } else {
+      result[key] = normalizeValue(key, value);
+    }
+  }
+  
+  return result;
+}
+
+/**
+ * Normalize API response to ensure consistent field types
+ * Bybit API sometimes returns inconsistent types for certain fields
+ */
+export function normalizeResponse<T>(response: T): T {
+  if (typeof response !== 'object' || response === null) {
+    return response;
+  }
+  
+  return normalizeObject(response as Record<string, unknown>) as T;
+}
+
 // Singleton client instance
 let clientInstance: RestClientV5 | null = null;
 
@@ -97,12 +192,12 @@ export function isRateLimitResponse(response: unknown): boolean {
 }
 
 /**
- * Execute an API call with rate limiting and automatic retry
+ * Execute an API call with rate limiting, automatic retry, and response normalization
  * This is the main wrapper for all Bybit API calls
  * 
  * @param endpoint - The endpoint/tool name for rate limit categorization
  * @param apiCall - The async function that makes the API call
- * @returns The API response
+ * @returns The normalized API response
  */
 export async function executeWithRateLimit<T>(
   endpoint: string,
@@ -120,7 +215,8 @@ export async function executeWithRateLimit<T>(
       throw new Error(`Bybit API rate limit error (${retCode}): ${retMsg}`);
     }
     
-    return result;
+    // Normalize response to ensure consistent field types
+    return normalizeResponse(result);
   });
 }
 
