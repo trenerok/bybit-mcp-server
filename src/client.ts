@@ -190,7 +190,33 @@ export function isTestnet(): boolean {
  * Sanitize error messages to remove API keys
  */
 export function sanitizeError(error: unknown): string {
-  let message = error instanceof Error ? error.message : String(error);
+  let message: string;
+  
+  if (error instanceof Error) {
+    message = error.message;
+  } else if (typeof error === 'object' && error !== null) {
+    // Handle error objects from bybit-api library
+    const errObj = error as Record<string, unknown>;
+    if ('message' in errObj && typeof errObj.message === 'string') {
+      message = errObj.message;
+    } else if ('retMsg' in errObj && typeof errObj.retMsg === 'string') {
+      // Bybit API error format
+      message = `Bybit API Error: ${errObj.retMsg}${errObj.retCode ? ` (code: ${errObj.retCode})` : ''}`;
+    } else if ('body' in errObj && typeof errObj.body === 'object' && errObj.body !== null) {
+      // HTTP error with body
+      const body = errObj.body as Record<string, unknown>;
+      message = body.retMsg ? String(body.retMsg) : JSON.stringify(errObj.body);
+    } else {
+      // Fallback: stringify the entire error object
+      try {
+        message = JSON.stringify(error);
+      } catch {
+        message = 'Unknown error occurred';
+      }
+    }
+  } else {
+    message = String(error);
+  }
   
   // Remove any API key/secret that might appear in error messages
   const apiKey = process.env.BYBIT_API_KEY;
