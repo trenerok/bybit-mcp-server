@@ -14,6 +14,9 @@ function checkAuth() {
   }
 }
 
+// Helper to accept string or number and convert to string
+const stringOrNumber = z.union([z.string(), z.number()]).transform(val => String(val)).optional();
+
 // ============ Schemas ============
 
 export const GetPositionsSchema = z.object({
@@ -37,8 +40,8 @@ export const GetClosedPnlSchema = z.object({
 export const GetExecutionListSchema = z.object({
   category: z.enum(['spot', 'linear', 'inverse', 'option']).default('linear').describe('Product category'),
   symbol: z.string().optional().describe('Trading pair symbol'),
-  orderId: z.string().optional().describe('Order ID filter'),
-  orderLinkId: z.string().optional().describe('User custom order ID filter'),
+  orderId: stringOrNumber.describe('Order ID filter'),
+  orderLinkId: stringOrNumber.describe('User custom order ID filter'),
   baseCoin: z.string().optional().describe('Base coin filter'),
   startTime: z.number().optional().describe('Start timestamp in ms'),
   endTime: z.number().optional().describe('End timestamp in ms'),

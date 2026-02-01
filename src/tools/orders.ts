@@ -16,13 +16,16 @@ function checkAuth() {
 
 // ============ Schemas ============
 
+// Helper to accept string or number and convert to string
+const stringOrNumber = z.union([z.string(), z.number()]).transform(val => String(val)).optional();
+
 export const GetOpenOrdersSchema = z.object({
   category: z.enum(['spot', 'linear', 'inverse', 'option']).default('linear').describe('Product category'),
   symbol: z.string().optional().describe('Trading pair symbol'),
   baseCoin: z.string().optional().describe('Base coin filter'),
   settleCoin: z.string().optional().describe('Settlement coin filter'),
-  orderId: z.string().optional().describe('Order ID filter'),
-  orderLinkId: z.string().optional().describe('User custom order ID filter'),
+  orderId: stringOrNumber.describe('Order ID filter'),
+  orderLinkId: stringOrNumber.describe('User custom order ID filter'),
   openOnly: z.number().optional().describe('0: all statuses, 1: open/partial only, 2: conditional triggered'),
   orderFilter: z.enum(['Order', 'tpslOrder', 'StopOrder']).optional().describe('Order filter'),
   limit: z.number().optional().describe('Number of results (default: 20, max: 50)'),
@@ -33,8 +36,8 @@ export const GetOrderHistorySchema = z.object({
   category: z.enum(['spot', 'linear', 'inverse', 'option']).default('linear').describe('Product category'),
   symbol: z.string().optional().describe('Trading pair symbol'),
   baseCoin: z.string().optional().describe('Base coin filter'),
-  orderId: z.string().optional().describe('Order ID filter'),
-  orderLinkId: z.string().optional().describe('User custom order ID filter'),
+  orderId: stringOrNumber.describe('Order ID filter'),
+  orderLinkId: stringOrNumber.describe('User custom order ID filter'),
   orderFilter: z.enum(['Order', 'tpslOrder', 'StopOrder']).optional().describe('Order filter'),
   orderStatus: z.string().optional().describe('Order status filter'),
   startTime: z.number().optional().describe('Start timestamp in ms'),
@@ -46,8 +49,8 @@ export const GetOrderHistorySchema = z.object({
 export const GetTradeHistorySchema = z.object({
   category: z.enum(['spot', 'linear', 'inverse', 'option']).default('linear').describe('Product category'),
   symbol: z.string().optional().describe('Trading pair symbol'),
-  orderId: z.string().optional().describe('Order ID filter'),
-  orderLinkId: z.string().optional().describe('User custom order ID filter'),
+  orderId: stringOrNumber.describe('Order ID filter'),
+  orderLinkId: stringOrNumber.describe('User custom order ID filter'),
   baseCoin: z.string().optional().describe('Base coin filter'),
   startTime: z.number().optional().describe('Start timestamp in ms'),
   endTime: z.number().optional().describe('End timestamp in ms'),
