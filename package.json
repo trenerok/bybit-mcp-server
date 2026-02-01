@@ -25,16 +25,16 @@
     "ai",
     "llm"
   ],
-  "author": "",
+  "author": "trenerok",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-username/bybit-mcp-server.git"
+    "url": "git+https://github.com/trenerok/bybit-mcp-server.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/bybit-mcp-server/issues"
+    "url": "https://github.com/trenerok/bybit-mcp-server/issues"
   },
-  "homepage": "https://github.com/your-username/bybit-mcp-server#readme",
+  "homepage": "https://github.com/trenerok/bybit-mcp-server#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "bybit-api": "^3.10.0",

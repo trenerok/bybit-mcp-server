@@ -46,7 +46,7 @@ A secure, read-only [Model Context Protocol](https://modelcontextprotocol.io/) (
 ### 1. Clone and Install
 
 ```bash
-git clone https://github.com/your-username/bybit-mcp-server.git
+git clone https://github.com/trenerok/bybit-mcp-server.git
 cd bybit-mcp-server
 npm install
 ```
