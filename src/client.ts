@@ -103,6 +103,34 @@ export function normalizeResponse<T>(response: T): T {
   return normalizeObject(response as Record<string, unknown>) as T;
 }
 
+/**
+ * Custom JSON parser that normalizes field types during parsing
+ * This intercepts the raw JSON response before any library validation
+ */
+function normalizeJsonParse(text: string): unknown {
+  try {
+    const parsed = JSON.parse(text);
+    return normalizeResponse(parsed);
+  } catch {
+    return text;
+  }
+}
+
+/**
+ * Create axios transformResponse that normalizes data during parsing
+ */
+function createTransformResponse() {
+  return [
+    (data: string) => {
+      // Only transform if it's a string (raw response)
+      if (typeof data === 'string') {
+        return normalizeJsonParse(data);
+      }
+      return data;
+    },
+  ];
+}
+
 // Singleton client instance
 let clientInstance: RestClientV5 | null = null;
 
@@ -111,12 +139,19 @@ let clientInstance: RestClientV5 | null = null;
  */
 export function getClient(): RestClientV5 {
   if (!clientInstance) {
-    clientInstance = new RestClientV5({
-      key: process.env.BYBIT_API_KEY || '',
-      secret: process.env.BYBIT_API_SECRET || '',
-      testnet: process.env.BYBIT_TESTNET === 'true',
-      recv_window: parseInt(process.env.BYBIT_RECV_WINDOW || '5000', 10),
-    });
+    clientInstance = new RestClientV5(
+      {
+        key: process.env.BYBIT_API_KEY || '',
+        secret: process.env.BYBIT_API_SECRET || '',
+        testnet: process.env.BYBIT_TESTNET === 'true',
+        recv_window: parseInt(process.env.BYBIT_RECV_WINDOW || '5000', 10),
+      },
+      {
+        // Use custom transformResponse to normalize data types at the axios level
+        // This ensures data is normalized before any library-level validation
+        transformResponse: createTransformResponse(),
+      }
+    );
   }
   return clientInstance;
 }
