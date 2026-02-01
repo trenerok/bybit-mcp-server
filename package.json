@@ -1,0 +1,51 @@
+{
+  "name": "bybit-mcp-server",
+  "version": "1.0.0",
+  "description": "Secure, read-only MCP server for Bybit V5 API with graceful rate limiting",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "bybit-mcp-server": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "rebuild": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "bybit",
+    "cryptocurrency",
+    "trading",
+    "api",
+    "claude",
+    "ai",
+    "llm"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/bybit-mcp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/bybit-mcp-server/issues"
+  },
+  "homepage": "https://github.com/your-username/bybit-mcp-server#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "bybit-api": "^3.10.0",
+    "zod": "^3.23.0",
+    "zod-to-json-schema": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
